@@ -1,0 +1,2483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор стоимости — Рублёвские мастера</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --dark: #121212;
+            --charcoal: #1a1a1a;
+            --gold: #c9a227;
+            --gold-light: #e0c36a;
+            --cream: #f5f0e6;
+            --white: #ffffff;
+            --gray: #8a8a8a;
+            --gray-light: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--black);
+            /* background-image: url('images/black-marble-texture-background.jpg');*/
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+            color: var(--cream);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 40px 24px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+        }
+
+        .calc-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .calc-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .calc-header h1 {
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            color: var(--gold-light);
+            margin-bottom: 12px;
+        }
+
+        .calc-header p {
+            color: var(--gray-light);
+            font-size: 1.1rem;
+        }
+
+        .calc-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .calc-rooms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .room-btn {
+            padding: 12px 24px;
+            background: var(--charcoal);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            color: var(--gray-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .room-btn:hover {
+            border-color: var(--gold);
+            color: var(--white);
+        }
+
+        .room-btn.active {
+            background: var(--gold);
+            color: var(--black);
+            border-color: var(--gold);
+        }
+
+        .calc-works {
+            background: var(--charcoal);
+            border: 1px solid rgba(201, 162, 39, 0.2);
+            border-radius: 8px;
+            padding: 32px;
+        }
+
+        .calc-room-content {
+            display: none;
+        }
+
+        .calc-room-content.active {
+            display: block;
+        }
+
+        .calc-group-title {
+            font-size: 1.2rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+        }
+
+        .calc-item {
+            display: grid;
+            grid-template-columns: 1fr 120px;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .calc-item label {
+            font-size: 0.9rem;
+            color: var(--gray-light);
+        }
+
+        .calc-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--black);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--cream);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            text-align: center;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+
+        .calc-input:focus {
+            border-color: var(--gold);
+        }
+
+        .calc-result {
+            background: var(--charcoal);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 8px;
+            padding: 32px;
+            position: sticky;
+            top: 40px;
+        }
+
+        .calc-result h3 {
+            font-size: 1.2rem;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+
+        .calc-total {
+            font-size: 2.5rem;
+            color: var(--gold);
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .calc-breakdown {
+            font-size: 0.85rem;
+            color: var(--gray-light);
+            margin-bottom: 24px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .calc-breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .calc-breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .calc-breakdown-item span:first-child {
+            color: var(--gray-light);
+        }
+
+        .calc-breakdown-item span:last-child {
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        .calc-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calc-btn:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201, 162, 39, 0.3);
+}
+
+/* Кнопка «Показать общий итог» */
+.calc-btn-total {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    margin-bottom: 12px;
+}
+
+.calc-btn-total:hover {
+    background: var(--gold);
+    color: var(--black);
+    box-shadow: 0 8px 24px rgba(201, 162, 39, 0.3);
+}
+
+/* Кнопка «Отправить заявку» */
+.calc-btn-send {
+    background: var(--gold);
+    color: var(--black);
+}
+
+.calc-note {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 16px;
+    text-align: center;
+}
+
+       /* === Мобильная версия === */
+@media (max-width: 768px) {
+
+    body {
+        padding: 20px 12px;
+    }
+
+    .calc-header {
+        margin-bottom: 24px;
+    }
+
+    .calc-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+    }
+
+    .calc-header p {
+        font-size: 0.9rem;
+    }
+
+    .calc-wrapper {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    /* Кнопки помещений — горизонтальный скролл */
+    .calc-rooms {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .calc-rooms::-webkit-scrollbar {
+        display: none;
+    }
+
+    .room-btn {
+        flex-shrink: 0;
+        padding: 10px 18px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* Карточка с работами */
+    .calc-works {
+        padding: 20px 16px;
+        border-radius: 12px;
+    }
+
+    .calc-group-title {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+    }
+
+    /* Поля ввода — крупнее */
+    .calc-item {
+        grid-template-columns: 1fr 90px;
+        gap: 10px;
+        margin-bottom: 14px;
+        align-items: center;
+    }
+
+    .calc-item label {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+
+    .calc-input {
+        padding: 12px 8px;
+        font-size: 1rem;
+        border-radius: 6px;
+        min-height: 44px; /* удобно для пальца */
+    }
+
+    /* Блок итога */
+    .calc-result {
+        position: static;
+        padding: 20px 16px;
+        border-radius: 12px;
+    }
+
+    .calc-result h3 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    .calc-total {
+        font-size: 2rem;
+        margin-bottom: 16px;
+    }
+
+    .calc-breakdown {
+        font-size: 0.8rem;
+        max-height: 220px;
+        margin-bottom: 20px;
+    }
+
+    .calc-breakdown-item {
+        padding: 8px 0;
+        font-size: 0.8rem;
+    }
+
+    .calc-breakdown-item span:first-child {
+        max-width: 60%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Кнопки — крупные */
+    .calc-btn {
+        padding: 16px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        min-height: 52px;
+    }
+
+    .calc-btn-total {
+        margin-bottom: 10px;
+    }
+
+    .calc-note {
+        font-size: 0.7rem;
+        margin-top: 12px;
+        line-height: 1.4;
+    }
+}
+
+/* === Очень маленькие экраны === */
+@media (max-width: 400px) {
+
+    .calc-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .calc-item {
+        grid-template-columns: 1fr 70px;
+        gap: 8px;
+    }
+
+    .calc-item label {
+        font-size: 0.8rem;
+    }
+
+    .calc-input {
+        padding: 10px 6px;
+        font-size: 0.95rem;
+    }
+
+    .calc-total {
+        font-size: 1.7rem;
+    }
+
+    .calc-btn {
+        padding: 14px;
+        font-size: 0.8rem;
+    }
+}
+
+
+/* Обёртка для полей */
+.calc-inputs {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Количество */
+.calc-qty {
+    width: 60px;
+    padding: 10px 6px;
+    background: var(--black);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    text-align: center;
+    outline: none;
+    border-radius: 4px;
+}
+
+.calc-qty:focus {
+    border-color: var(--gold);
+}
+
+/* Цена — редактируемая */
+.calc-price {
+    width: 80px;
+    padding: 10px 6px;
+    background: rgba(201, 162, 39, 0.08);
+    border: 1px solid rgba(201, 162, 39, 0.3);
+    color: var(--gold);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    outline: none;
+    border-radius: 4px;
+}
+
+.calc-price:focus {
+    border-color: var(--gold);
+    background: rgba(201, 162, 39, 0.15);
+}
+
+/* Кнопка удаления */
+.calc-remove {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.calc-remove:hover {
+    background: #ff6b6b;
+    color: var(--white);
+    border-color: #ff6b6b;
+}
+
+
+
+/* Кнопка «Добавить опцию» */
+.calc-add-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 12px;
+    background: transparent;
+    border: 1px dashed rgba(201, 162, 39, 0.4);
+    color: var(--gold);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.calc-add-btn:hover {
+    background: rgba(201, 162, 39, 0.08);
+    border-color: var(--gold);
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+    .calc-inputs {
+        gap: 4px;
+    }
+
+    .calc-qty {
+        width: 50px;
+        padding: 8px 4px;
+        font-size: 0.85rem;
+    }
+
+    .calc-price {
+        width: 70px;
+        padding: 8px 4px;
+        font-size: 0.85rem;
+    }
+
+    .calc-remove {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+
+    .calc-add-btn {
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+}
+
+
+/* Подытог по помещению */
+.calc-subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    margin-top: 20px;
+    border-top: 1px solid rgba(201, 162, 39, 0.35);
+    border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+    font-size: 1rem;
+    color: var(--gold-light);
+    font-weight: 500;
+}
+
+.calc-subtotal .subtotal-value {
+    color: var(--gold);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+    .calc-subtotal {
+        padding: 12px 0;
+        margin-top: 16px;
+        font-size: 0.9rem;
+    }
+    .calc-subtotal .subtotal-value {
+        font-size: 1.1rem;
+    }
+}
+
+
+.breakdown-room {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+}
+.breakdown-room:last-child {
+    border-bottom: none;
+}
+.breakdown-room-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.breakdown-room-title span:last-child {
+    color: var(--gold-light);
+}
+.breakdown-room .calc-breakdown-item {
+    padding: 4px 0 4px 12px;
+    font-size: 0.8rem;
+    border-bottom: none;
+}
+
+    </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</head>
+<body>
+    <div class="calc-container">
+        <div class="calc-header">
+            <h1>Калькулятор стоимости</h1>
+            <p>Выберите помещение и укажите объёмы работ</p>
+        </div>
+
+        <div class="calc-wrapper">
+            <div>
+                               <div class="calc-rooms">
+                    <button class="room-btn active" data-room="spalnaya1">Спальная 1</button>
+                    <button class="room-btn" data-room="spalnaya2">Спальная 2</button>
+                    <button class="room-btn" data-room="master_sanuzel">Мастер-санузел</button>
+                    <button class="room-btn" data-room="sanuzel1">Санузел 1</button>
+                    <button class="room-btn" data-room="sanuzel2">Санузел 2</button>
+                    <button class="room-btn" data-room="kuhnya">Кухня</button>
+                    <button class="room-btn" data-room="prihozhaya">Прихожая</button>
+                    <button class="room-btn" data-room="gostinnaya">Гостинная</button>
+                    <button class="room-btn" data-room="koridor">Коридор</button>
+                    <button class="room-btn" data-room="postirochnaya">Постирочная</button>
+                    <button class="room-btn" data-room="garderobnaya">Гардеробная</button>
+                    <button class="room-btn" data-room="lestnica">Лестница</button>
+                </div>
+
+
+
+
+ <!-- добавить:
+  Мастер санузел, санузел 1,санузел 2, постирочная, гардеробная, добавить подитог на каждый раздел и в кконце общеее, + убрать стоимость работ расходные материалы-->
+
+   ----
+               <div class="calc-works">
+    <!-- Спальная 1 -->
+    <div class="calc-room-content active" data-room-content="spalnaya1">
+        <div class="calc-group-title">Спальная 1</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Спальная 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Спальная 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Спальная 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Спальная 2 -->
+    <div class="calc-room-content" data-room-content="spalnaya2">
+        <div class="calc-group-title">Спальная 2</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Спальная 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Спальная 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Спальная 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+       <!-- Мастер-санузел -->
+    <div class="calc-room-content" data-room-content="master_sanuzel">
+        <div class="calc-group-title">Мастер-санузел</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Мастер-санузел)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Мастер-санузел)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Мастер-санузел)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Двойная раковина, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Двойная раковина (Мастер-санузел)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="100000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Поддон, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Поддон (Мастер-санузел)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="20000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Трап с уклоном, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Трап с уклоном (Мастер-санузел)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="30000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Ниша с полками, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Ниша с полками (Мастер-санузел)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Санузел 1 -->
+    <div class="calc-room-content" data-room-content="sanuzel1">
+        <div class="calc-group-title">Санузел 1</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Санузел 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Санузел 1)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Санузел 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Двойная раковина, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Двойная раковина (Санузел 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="100000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Поддон, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Поддон (Санузел 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="20000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Трап с уклоном, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Трап с уклоном (Санузел 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="30000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Ниша с полками, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Ниша с полками (Санузел 1)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Санузел 2 -->
+    <div class="calc-room-content" data-room-content="sanuzel2">
+        <div class="calc-group-title">Санузел 2</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Санузел 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Санузел 2)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Санузел 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Двойная раковина, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Двойная раковина (Санузел 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="100000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Поддон, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Поддон (Санузел 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="20000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Трап с уклоном, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Трап с уклоном (Санузел 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="30000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Ниша с полками, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Ниша с полками (Санузел 2)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Постирочная -->
+    <div class="calc-room-content" data-room-content="postirochnaya">
+        <div class="calc-group-title">Постирочная</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Постирочная)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Постирочная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Постирочная)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Гардеробная -->
+    <div class="calc-room-content" data-room-content="garderobnaya">
+        <div class="calc-group-title">Гардеробная</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Гардеробная)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Гардеробная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Гардеробная)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Гостинная -->
+    <div class="calc-room-content" data-room-content="gostinnaya">
+        <div class="calc-group-title">Гостинная</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Гостинная)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Гостинная)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Гостинная)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Кухня -->
+    <div class="calc-room-content" data-room-content="kuhnya">
+        <div class="calc-group-title">Кухня</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Кухня)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Кухня)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Кухня)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+        <!-- Прихожая -->
+    <div class="calc-room-content" data-room-content="prihozhaya">
+        <div class="calc-group-title">Прихожая</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Прихожая)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Прихожая)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Прихожая)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Коридор -->
+    <div class="calc-room-content" data-room-content="koridor">
+        <div class="calc-group-title">Коридор</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Коридор)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Коридор)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Коридор)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+
+    <!-- Лестница -->
+    <div class="calc-room-content" data-room-content="lestnica">
+        <div class="calc-group-title">Лестница</div>
+        <div class="calc-item">
+            <label>Укладка керамогранита, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка керамогранита (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на стены, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на стены (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка плитки на пол, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Укладка на пол (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="4000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка крупноформатной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Крупноформат (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка мозаики, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Мозаика (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="8000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Укладка декоративной плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Декор (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="6000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Затирка эпоксидная, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Затирка (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1200" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Демонтаж плитки, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Демонтаж (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Гидроизоляция, м²</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м²" data-name="Гидроизоляция (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Облицовка ступеней, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Ступени (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="7000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Кладка фартука, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Фартук (Лестница)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="45000" min="0" step="1000">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Чистый рез, м/п</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="м/п" data-name="Чистый рез (Лестница)" placeholder="0" min="0" step="0.1">
+                <input type="number" class="calc-price" value="1000" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-item">
+            <label>Отверстия, шт.</label>
+            <div class="calc-inputs">
+                <input type="number" class="calc-qty" data-unit="шт." data-name="Отверстия (Лестница)" placeholder="0" min="0" step="1">
+                <input type="number" class="calc-price" value="1500" min="0" step="100">
+                <button class="calc-remove" onclick="removeItem(this)">×</button>
+            </div>
+        </div>
+        <div class="calc-subtotal">
+            <span>Итого по помещению:</span>
+            <span class="subtotal-value">0 ₽</span>
+        </div>
+        <button class="calc-add-btn" onclick="addItem(this)">+ Добавить опцию</button>
+    </div>
+</div>
+
+<div class="calc-result">
+    <h3>Предварительная стоимость</h3>
+    <div class="calc-total" id="calcTotal">0 ₽</div>
+    <div class="calc-breakdown" id="calcBreakdown"></div>
+    
+    <button class="calc-btn calc-btn-total" onclick="generatePDF()">Скачать смету PDF</button>
+    <button class="calc-btn calc-btn-send" onclick="sendCalc()">Отправить заявку</button>
+    
+    <p class="calc-note">* Расчёт является предварительным. Точная стоимость определяется после замера.</p>
+</div>
+
+<script>
+// === Генерация PDF ===
+async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+
+  // 1. Собираем данные из калькулятора
+const items = document.querySelectorAll('.calc-item');
+let rows = [];
+let total = 0;
+
+items.forEach(item => {
+    const qtyInput = item.querySelector('.calc-qty');
+    const priceInput = item.querySelector('.calc-price');
+    const nameInput = item.querySelector('.calc-name-input') || item.querySelector('label');
+
+    if (!qtyInput || !priceInput) return;
+
+    const qty = parseFloat(qtyInput.value) || 0;
+    const price = parseFloat(priceInput.value) || 0;
+    const name = nameInput ? (nameInput.value || nameInput.textContent).trim() : 'Опция';
+    const unit = qtyInput.dataset.unit || 'шт.';
+
+    if (qty > 0 && price > 0) {
+        const sum = qty * price;
+        total += sum;
+        rows.push({ name, unit, value: qty, price, sum });
+    }
+});
+
+if (rows.length === 0) {
+    alert('Сначала укажите объёмы работ в калькуляторе.');
+    return;
+}
+
+    // 2. Заполняем шапку
+    const today = new Date();
+    document.getElementById('pdfDate').textContent =
+        today.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('pdfNumber').textContent = randomNum;
+
+    // 3. Заполняем таблицу
+    const tbody = document.getElementById('pdfTableBody');
+    tbody.innerHTML = rows.map((row, i) => `
+        <tr style="background: ${i % 2 === 0 ? '#f9f9f9' : '#ffffff'}; border-bottom: 1px solid #eee;">
+            <td style="padding: 7px 6px;">${row.name}</td>
+            <td style="padding: 7px 6px; text-align: center;">${row.unit}</td>
+            <td style="padding: 7px 6px; text-align: center;">${row.value}</td>
+            <td style="padding: 7px 6px; text-align: right;">${row.price.toLocaleString('ru-RU')} ₽</td>
+            <td style="padding: 7px 6px; text-align: right; font-weight: 500;">${row.sum.toLocaleString('ru-RU')} ₽</td>
+        </tr>
+    `).join('');
+
+    // 4. Итого
+    document.getElementById('pdfTotal').textContent = total.toLocaleString('ru-RU') + ' ₽';
+    document.getElementById('pdfTotalWords').textContent = 'Сумма прописью: ' + numberToWords(total) + ' рублей';
+
+// 5. Генерируем PDF
+    const template = document.getElementById('pdfTemplate');
+
+    // Ждём немного, чтобы DOM обновился
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const canvas = await html2canvas(template, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Если контент не влез — добавляем страницы
+    while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+    }
+
+    // 6. Сохраняем
+    const fileName = `Смета_Рублёвские_${randomNum}_${today.toLocaleDateString('ru-RU').replace(/\./g, '-')}.pdf`;
+    pdf.save(fileName);
+}
+
+// === Сумма прописью ===
+function numberToWords(num) {
+    const units = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+    const teens = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать', 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать'];
+    const tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто'];
+    const hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот'];
+
+    if (num === 0) return 'ноль';
+
+    const n = Math.floor(num);
+    let result = '';
+
+    // Тысячи
+    if (n >= 1000) {
+        const thousands = Math.floor(n / 1000);
+        result += numberToWords(thousands) + ' тысяч ';
+    }
+
+    const remainder = n % 1000;
+    if (remainder > 0) {
+        const h = Math.floor(remainder / 100);
+        const t = Math.floor((remainder % 100) / 10);
+        const u = remainder % 10;
+
+        if (h > 0) result += hundreds[h] + ' ';
+        if (t === 1) {
+            result += teens[u] + ' ';
+        } else {
+            if (t > 1) result += tens[t] + ' ';
+            if (u > 0) result += units[u] + ' ';
+        }
+    }
+
+    return result.trim();
+}
+</script>
+<script>
+// === Добавление опции ===
+function addItem(btn) {
+    // Находим группу, в которой нажали кнопку
+    const group = btn.closest('.calc-room-content') || btn.closest('.calc-group');
+    if (!group) return;
+
+    // Находим, куда вставить (перед кнопкой)
+    const addBtn = group.querySelector('.calc-add-btn');
+
+    // Создаём новую позицию
+    const newItem = document.createElement('div');
+    newItem.className = 'calc-item';
+    newItem.innerHTML = `
+        <label><input type="text" class="calc-name-input" placeholder="Название опции" value="Новая опция"></label>
+        <div class="calc-inputs">
+            <input type="number" class="calc-qty" data-unit="шт." placeholder="0" min="0" step="1" title="Количество">
+            <input type="number" class="calc-price" value="1000" min="0" step="100" title="Цена">
+            <button class="calc-remove" onclick="removeItem(this)" title="Удалить">×</button>
+        </div>
+    `;
+
+    // Вставляем перед кнопкой
+    addBtn.parentNode.insertBefore(newItem, addBtn);
+
+    // Пересчитываем
+    recalcAll();
+}
+
+// === Удаление позиции ===
+function removeItem(btn) {
+    const item = btn.closest('.calc-item');
+    if (item) {
+        item.remove();
+        recalcAll();
+    }
+}
+
+// === Пересчёт всех (с подытогами) ===
+function recalcAll() {
+    const rooms = document.querySelectorAll('.calc-room-content');
+    let grandTotal = 0;
+    let breakdown = [];
+
+   rooms.forEach(room => {
+    const roomTitle = room.querySelector('.calc-group-title')?.textContent.trim() || room.dataset.roomContent;
+    let roomTotal = 0;
+    room.querySelectorAll('.calc-item').forEach(item => {
+            const qtyInput = item.querySelector('.calc-qty');
+            const priceInput = item.querySelector('.calc-price');
+            const nameInput = item.querySelector('.calc-name-input') || item.querySelector('label');
+            if (!qtyInput || !priceInput) return;
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const name = nameInput ? (nameInput.value || nameInput.textContent).trim() : 'Опция';
+            const unit = qtyInput.dataset.unit || 'шт.';
+            if (qty > 0 && price > 0) {
+                const sum = qty * price;
+                roomTotal += sum;
+                grandTotal += sum;
+              breakdown.push({ room: roomTitle, name, qty, unit, price, sum });
+            }
+        });
+        const subtotalEl = room.querySelector('.subtotal-value');
+        if (subtotalEl) subtotalEl.textContent = roomTotal.toLocaleString('ru-RU') + ' ₽';
+    });
+
+ const totalEl = document.getElementById('calcTotal');
+const breakdownEl = document.getElementById('calcBreakdown');
+if (totalEl) totalEl.textContent = grandTotal.toLocaleString('ru-RU') + ' ₽';
+if (breakdownEl) {
+    if (breakdown.length > 0) {
+        // Группируем позиции по помещению
+        const grouped = {};
+        breakdown.forEach(item => {
+            if (!grouped[item.room]) grouped[item.room] = { total: 0, items: [] };
+            grouped[item.room].total += item.sum;
+            grouped[item.room].items.push(item);
+        });
+
+        breakdownEl.innerHTML = Object.entries(grouped).map(([room, data]) => `
+            <div class="breakdown-room">
+                <div class="breakdown-room-title">
+                    <span>${room}</span>
+                    <span>${data.total.toLocaleString('ru-RU')} ₽</span>
+                </div>
+                ${data.items.map(item => `
+                    <div class="calc-breakdown-item">
+                        <span>${item.name} (${item.qty} ${item.unit} × ${item.price.toLocaleString('ru-RU')})</span>
+                        <span>${item.sum.toLocaleString('ru-RU')} ₽</span>
+                    </div>
+                `).join('')}
+            </div>
+        `).join('');
+    } else {
+        breakdownEl.innerHTML = '<p style="color: var(--gray); text-align: center;">Выберите работы и укажите объёмы</p>';
+    }
+}
+}
+
+
+// === Переключение помещений ===
+document.querySelectorAll('.room-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const room = this.dataset.room;
+
+        document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        document.querySelectorAll('.calc-room-content').forEach(c => c.classList.remove('active'));
+        const content = document.querySelector(`.calc-room-content[data-room-content="${room}"]`);
+        if (content) content.classList.add('active');
+    });
+});
+
+
+// === Автопересчёт при вводе ===
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('calc-qty') || e.target.classList.contains('calc-price')) {
+        recalcAll();
+    }
+});
+
+// === Сохранение в localStorage ===
+function savePrices() {
+    const prices = {};
+    document.querySelectorAll('.calc-price').forEach((input, i) => {
+        prices['price_' + i] = input.value;
+    });
+    localStorage.setItem('calc_prices', JSON.stringify(prices));
+}
+
+// === Загрузка цен ===
+function loadPrices() {
+    const saved = localStorage.getItem('calc_prices');
+    if (!saved) return;
+    try {
+        const prices = JSON.parse(saved);
+        document.querySelectorAll('.calc-price').forEach((input, i) => {
+            if (prices['price_' + i]) input.value = prices['price_' + i];
+        });
+    } catch(e) {}
+}
+
+// При изменении цены — сохраняем
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('calc-price')) {
+        savePrices();
+    }
+});
+
+// Загружаем при старте
+document.addEventListener('DOMContentLoaded', function() {
+    loadPrices();
+    recalcAll();
+});
+</script>
+
+<!-- Скрытый шаблон для PDF -->
+<div id="pdfTemplate" style="position: absolute; left: -9999px; top: 0; width: 210mm; padding: 20mm; background: #ffffff; color: #000000; font-family: 'Inter', Arial, sans-serif;">
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #c9a227; padding-bottom: 20px; margin-bottom: 30px;">
+        <div>
+            <div style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; color: #0a0a0a; letter-spacing: 2px;">РУБЛЁВСКИЕ МАСТЕРА</div>
+            <div style="font-size: 11px; color: #666; margin-top: 4px; letter-spacing: 1px;">ПРЕМИАЛЬНАЯ ОТДЕЛКА КРУПНЫМ ФОРМАТОМ</div>
+            <div style="font-size: 10px; color: #888; margin-top: 8px;">Москва и Московская область</div>
+            <div style="font-size: 10px; color: #888;">+7 (906) 725-80-28 · rublevskie.pro@yandex.ru</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 11px; color: #888;">Смета №</div>
+            <div style="font-size: 18px; font-weight: 600; color: #c9a227;" id="pdfNumber">___</div>
+            <div style="font-size: 11px; color: #888; margin-top: 8px;">от</div>
+            <div style="font-size: 13px; color: #0a0a0a;" id="pdfDate">___</div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 20px; font-weight: 600; color: #0a0a0a;">ПРЕДВАРИТЕЛЬНАЯ СМЕТА</div>
+        <div style="font-size: 12px; color: #888; margin-top: 6px;">на выполнение работ по укладке крупноформатного керамогранита</div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
+        <thead>
+            <tr style="background: #0a0a0a; color: #ffffff;">
+                <th style="padding: 8px 6px; text-align: left; width: 50%;">Наименование работ</th>
+                <th style="padding: 8px 6px; text-align: center; width: 12%;">Ед.</th>
+                <th style="padding: 8px 6px; text-align: center; width: 12%;">Кол-во</th>
+                <th style="padding: 8px 6px; text-align: right; width: 13%;">Цена</th>
+                <th style="padding: 8px 6px; text-align: right; width: 13%;">Сумма</th>
+            </tr>
+        </thead>
+        <tbody id="pdfTableBody"></tbody>
+    </table>
+
+    <div style="background: #f5f0e6; padding: 16px 20px; border-radius: 4px; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #0a0a0a;">ИТОГО:</div>
+            <div style="font-size: 22px; font-weight: 700; color: #c9a227;" id="pdfTotal">0 ₽</div>
+        </div>
+        <div style="font-size: 10px; color: #666; margin-top: 8px;" id="pdfTotalWords">___</div>
+    </div>
+
+    <div style="font-size: 10px; color: #888; margin-bottom: 30px; line-height: 1.5;">
+        * Расчёт является предварительным. Точная стоимость определяется после замера объекта.<br>
+        * В стоимость не входит: расходные материалы (клей, затирка).<br>
+        * Материалы оплачиваются отдельно.
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <div>
+            <div style="font-size: 10px; color: #888; margin-bottom: 30px;">Исполнитель:</div>
+            <div style="border-bottom: 1px solid #000; width: 150px; margin-bottom: 4px;"></div>
+            <div style="font-size: 9px; color: #888;">подпись / ФИО</div>
+        </div>
+
+        <div style="text-align: center;">
+            <img src="images/stamp.jpg" alt="Печать" style="width: 140px; height: 140px; object-fit: contain; transform: rotate(-15deg);">
+        </div>
+
+        <div style="text-align: right;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 30px;">Заказчик:</div>
+            <div style="border-bottom: 1px solid #000; width: 150px; margin-bottom: 4px;"></div>
+            <div style="font-size: 9px; color: #888;">подпись / ФИО</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
